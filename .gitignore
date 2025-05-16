@@ -13,3 +13,6 @@ backend/target/
 # OS junk
 .DS_Store
 Thumbs.db
+
+#Backend
+*.properties
