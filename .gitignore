@@ -1,0 +1,15 @@
+# Node modules (frontend)
+frontend/node_modules/
+frontend/dist/
+
+# Spring Boot build files
+backend/target/
+*.log
+
+# Environment files
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
