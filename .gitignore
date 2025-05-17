@@ -15,4 +15,4 @@ backend/target/
 Thumbs.db
 
 #Backend
-*.properties
+backend/src/main/resources/application.properties
