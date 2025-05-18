@@ -1,16 +1,26 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignUpPage";
+import Dashboard from "./pages/Dashboard";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
-  const [msg, setMsg] = useState("");
+  console.log(localStorage.getItem("token"))
 
-  useEffect(() => {
-    axios.get("http://localhost:8080/api/test")
-      .then(res => setMsg(res.data))
-      .catch(err => console.error(err));
-  }, []);
-
-  return <div className="p-4 text-xl">{msg}</div>;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/dashboard" element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        } />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
