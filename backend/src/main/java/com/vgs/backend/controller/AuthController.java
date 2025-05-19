@@ -5,6 +5,8 @@ import com.vgs.backend.repository.*;
 import com.vgs.backend.service.EmailService;
 import com.vgs.backend.util.JwtUtil;
 import com.vgs.backend.util.PasswordHasher;
+import com.vgs.backend.util.UniversityDomainMap;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Random;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
@@ -21,28 +24,42 @@ public class AuthController {
     private final VerificationCodeRepository codeRepo;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
+    private final UniversityDomainMap universityDomainMap;
 
     public AuthController(UserRepository userRepo,
                           VerificationCodeRepository codeRepo,
                           EmailService emailService,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          UniversityDomainMap universityDomainMap) {
         this.userRepo = userRepo;
         this.codeRepo = codeRepo;
         this.emailService = emailService;
         this.jwtUtil = jwtUtil;
+        this.universityDomainMap = universityDomainMap;
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestParam String email,
-                                         @RequestParam String password,
-                                         @RequestParam String university) {
+    public ResponseEntity<String> signup(@RequestParam String first, @RequestParam String last,
+                                        @RequestParam String email, @RequestParam String password,
+                                        @RequestParam String university) {
+
         if (!email.endsWith(".edu"))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Must use a .edu email");
 
         if (userRepo.findByEmail(email).isPresent())
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
 
+        String domain = email.substring(email.indexOf("@") + 1).toLowerCase();
+
+        Set<String> validDomains = universityDomainMap.getUniversityDomainMap().get(university);
+        if (validDomains == null || !validDomains.contains(domain)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Email domain does not match selected university");
+        }
+
         User user = new User();
+        user.setFirstName(first);
+        user.setLastName(last);
         user.setEmail(email);
         user.setUniversity(university);
         user.setPasswordHash(PasswordHasher.hash(password));
@@ -56,7 +73,7 @@ public class AuthController {
         vc.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         codeRepo.save(vc);
 
-        emailService.sendCode(email, code);
+        //emailService.sendCode(email, code); //For dev this should be disabled
 
         return ResponseEntity.ok("Signup successful. Check your email for a verification code.");
     }

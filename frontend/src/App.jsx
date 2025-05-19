@@ -6,7 +6,6 @@ import Dashboard from "./pages/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
-  console.log(localStorage.getItem("token"))
 
   return (
     <Router>
