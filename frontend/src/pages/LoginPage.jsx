@@ -46,6 +46,9 @@ function LoginPage() {
         <button className="text-sm text-blue-600 underline" onClick={() => navigate("/signup")}>
           Don't have an account? Sign up
         </button>
+        <button className="text-blue-600 underline" onClick={() => navigate("/forgot-password")}>
+            Forgot your password?
+        </button>
       </div>
     </div>
   );

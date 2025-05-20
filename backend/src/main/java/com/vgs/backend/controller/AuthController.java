@@ -17,24 +17,29 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     private final UserRepository userRepo;
-    private final VerificationCodeRepository codeRepo;
+    private final VerificationCodeRepository vCodeRepo;
+    private final PasswordResetCodeRepository pCodeRepo;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
     private final UniversityDomainMap universityDomainMap;
 
     public AuthController(UserRepository userRepo,
-                          VerificationCodeRepository codeRepo,
+                          VerificationCodeRepository vCodeRepo,
+                          PasswordResetCodeRepository pCodeRepo,
                           EmailService emailService,
                           JwtUtil jwtUtil,
                           UniversityDomainMap universityDomainMap) {
         this.userRepo = userRepo;
-        this.codeRepo = codeRepo;
+        this.vCodeRepo = vCodeRepo;
+        this.pCodeRepo = pCodeRepo;
         this.emailService = emailService;
         this.jwtUtil = jwtUtil;
         this.universityDomainMap = universityDomainMap;
@@ -74,8 +79,8 @@ public class AuthController {
 
     @PostMapping("/vcode")
     public ResponseEntity<String> vcode(@RequestParam String email) {
-        if (codeRepo.existsByEmail(email)) {
-            codeRepo.deleteByEmail(email);
+        if (vCodeRepo.existsByEmail(email)) {
+            vCodeRepo.deleteByEmail(email);
         }
 
         String code = String.format("%06d", new Random().nextInt(999999));
@@ -83,9 +88,9 @@ public class AuthController {
         vc.setEmail(email);
         vc.setCode(code);
         vc.setExpiresAt(LocalDateTime.now().plusMinutes(10));
-        codeRepo.save(vc);
+        vCodeRepo.save(vc);
 
-        //emailService.sendCode(email, code); //For dev this should be disabled
+        //emailService.sendVerificationCode(email, code); //For dev this should be disabled
 
         return ResponseEntity.ok("Verification code sent to your email!");
 
@@ -94,14 +99,14 @@ public class AuthController {
     @PostMapping("/verify")
     public ResponseEntity<String> verify(@RequestParam String email,
                                          @RequestParam String code) {
-        VerificationCode vc = codeRepo.findByEmail(email)
+        VerificationCode vc = vCodeRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("No code found"));
 
         if (!vc.getCode().equals(code))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid code");
 
         if (vc.getExpiresAt().isBefore(LocalDateTime.now())){
-            codeRepo.delete(vc);
+            vCodeRepo.delete(vc);
             return ResponseEntity.status(HttpStatus.GONE).body("Code expired");
         }
             
@@ -111,7 +116,7 @@ public class AuthController {
 
         user.setVerified(true);
         userRepo.save(user);
-        codeRepo.delete(vc);
+        vCodeRepo.delete(vc);
 
         return ResponseEntity.ok("Email verified. You can now log in.");
     }
@@ -119,7 +124,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String email,
                                    @RequestParam String password) {
-                                    
+
         User user = userRepo.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         if (!user.isVerified()) {
@@ -131,5 +136,45 @@ public class AuthController {
 
         String token = jwtUtil.generateToken(email);
         return ResponseEntity.ok(Collections.singletonMap("token", token));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        Optional<User> userOpt = userRepo.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        pCodeRepo.deleteByEmail(email); // Remove old tokens
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetCode resetCode = new PasswordResetCode();
+        resetCode.setEmail(email);
+        resetCode.setCode(token);
+        resetCode.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        pCodeRepo.save(resetCode);
+
+        // emailService.sendResetPasswordCode(email, "Reset your password: http://localhost:5173/reset-password?token=" + token); //For dev this should be disabled
+
+        return ResponseEntity.ok("Reset link sent.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String code, @RequestParam String newPassword) {
+        PasswordResetCode prt = pCodeRepo.findByCode(code)
+            .orElseThrow(() -> new RuntimeException("Invalid code"));
+
+        if (prt.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.status(HttpStatus.GONE).body("Code expired");
+        }
+
+        User user = userRepo.findByEmail(prt.getEmail())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setPasswordHash(PasswordHasher.hash(newPassword));
+        userRepo.save(user);
+        pCodeRepo.delete(prt);
+
+        return ResponseEntity.ok("Password reset successful");
     }
 }

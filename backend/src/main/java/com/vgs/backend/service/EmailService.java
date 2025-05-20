@@ -20,11 +20,32 @@ public class EmailService {
     @Value("${sendgrid.from.email}")
     private String fromEmail;
 
-    public void sendCode(String toEmail, String code) {
+    public void sendVerificationCode(String toEmail, String code) {
         Email from = new Email(fromEmail);
         Email to = new Email(toEmail);
-        String subject = "Your Verification Code";
-        Content content = new Content("text/plain", "Your code is: " + code);
+        String subject = "Your VGS Account Verification Code";
+        Content content = new Content("text/plain", "Your verification code is: " + code);
+        Mail mail = new Mail(from, subject, to, content);
+
+        SendGrid sg = new SendGrid(sendGridApiKey);
+        Request request = new Request();
+
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            sg.api(request);
+            System.out.println("📧 Code sent to " + toEmail);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to send email", e);
+        }
+    }
+
+    public void sendResetPasswordCode(String toEmail, String link) {
+        Email from = new Email(fromEmail);
+        Email to = new Email(toEmail);
+        String subject = "Your VGS Account Password Reset Link";
+        Content content = new Content("text/plain", "Your link is: " + link);
         Mail mail = new Mail(from, subject, to, content);
 
         SendGrid sg = new SendGrid(sendGridApiKey);
