@@ -10,9 +10,11 @@ import com.vgs.backend.util.UniversityDomainMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -117,11 +119,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String email,
                                    @RequestParam String password) {
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                                    
+        User user = userRepo.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         if (!user.isVerified()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not verified"); 
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not verified", "redirect", "/verify", "email", email));
         }
 
         if (!PasswordHasher.matches(password, user.getPasswordHash()))

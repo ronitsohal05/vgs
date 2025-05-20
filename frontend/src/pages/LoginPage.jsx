@@ -11,10 +11,15 @@ function LoginPage() {
     try {
       const res = await axios.post("http://localhost:8080/auth/login", new URLSearchParams({ email, password }));
       localStorage.setItem("token", res.data.token);
-      console.log(localStorage.getItem("token"))
       navigate("/dashboard");
     } catch (err) {
-      alert(err.response?.data || "Login failed");
+      const data = err.response?.data;
+
+      if (data?.redirect === "/verify") {
+        navigate("/verify", { state: { email: data.email } });
+      } else {
+        alert(data?.error || "Login failed");
+      }
     }
   };
 
