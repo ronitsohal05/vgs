@@ -66,6 +66,16 @@ public class AuthController {
         user.setVerified(false);
         userRepo.save(user);
 
+        
+        return ResponseEntity.ok("Signup successful!");
+    }
+
+    @PostMapping("/vcode")
+    public ResponseEntity<String> vcode(@RequestParam String email) {
+        if (codeRepo.existsByEmail(email)) {
+            codeRepo.deleteByEmail(email);
+        }
+
         String code = String.format("%06d", new Random().nextInt(999999));
         VerificationCode vc = new VerificationCode();
         vc.setEmail(email);
@@ -75,7 +85,8 @@ public class AuthController {
 
         //emailService.sendCode(email, code); //For dev this should be disabled
 
-        return ResponseEntity.ok("Signup successful. Check your email for a verification code.");
+        return ResponseEntity.ok("Verification code sent to your email!");
+
     }
 
     @PostMapping("/verify")
@@ -87,8 +98,11 @@ public class AuthController {
         if (!vc.getCode().equals(code))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid code");
 
-        if (vc.getExpiresAt().isBefore(LocalDateTime.now()))
+        if (vc.getExpiresAt().isBefore(LocalDateTime.now())){
+            codeRepo.delete(vc);
             return ResponseEntity.status(HttpStatus.GONE).body("Code expired");
+        }
+            
 
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -106,8 +120,9 @@ public class AuthController {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!user.isVerified())
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Email not verified");
+        if (!user.isVerified()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not verified"); 
+        }
 
         if (!PasswordHasher.matches(password, user.getPasswordHash()))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password");

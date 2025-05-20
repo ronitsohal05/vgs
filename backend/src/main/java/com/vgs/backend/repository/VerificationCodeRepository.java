@@ -6,4 +6,8 @@ import java.util.Optional;
 
 public interface VerificationCodeRepository extends MongoRepository<VerificationCode, String> {
     Optional<VerificationCode> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+
+    void deleteByEmail(String email);
 }
