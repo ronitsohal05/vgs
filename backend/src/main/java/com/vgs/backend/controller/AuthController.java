@@ -79,8 +79,16 @@ public class AuthController {
 
     @PostMapping("/vcode")
     public ResponseEntity<String> vcode(@RequestParam String email) {
-        if (vCodeRepo.existsByEmail(email)) {
-            vCodeRepo.deleteByEmail(email);
+        Optional<VerificationCode> existing = vCodeRepo.findByEmail(email);
+
+        if (existing.isPresent()) {
+            VerificationCode oldCode = existing.get();
+            if (oldCode.getLastSentAt() != null &&
+                oldCode.getLastSentAt().isAfter(LocalDateTime.now().minusSeconds(60))) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("Please wait 60 seconds before requesting another code.");
+            }
+            vCodeRepo.delete(oldCode);
         }
 
         String code = String.format("%06d", new Random().nextInt(999999));
@@ -88,6 +96,7 @@ public class AuthController {
         vc.setEmail(email);
         vc.setCode(code);
         vc.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        vc.setLastSentAt(LocalDateTime.now());
         vCodeRepo.save(vc);
 
         //emailService.sendVerificationCode(email, code); //For dev this should be disabled
@@ -145,16 +154,27 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
-        pCodeRepo.deleteByEmail(email); // Remove old tokens
+        Optional<PasswordResetCode> existingCode = pCodeRepo.findByEmail(email);
+
+        if (existingCode.isPresent()) {
+            PasswordResetCode prc = existingCode.get();
+            if (prc.getLastSentAt() != null &&
+                prc.getLastSentAt().isAfter(LocalDateTime.now().minusSeconds(60))) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body("Please wait 60 seconds before requesting another reset link.");
+            }
+            pCodeRepo.delete(prc);
+        }
 
         String token = UUID.randomUUID().toString();
         PasswordResetCode resetCode = new PasswordResetCode();
         resetCode.setEmail(email);
         resetCode.setCode(token);
         resetCode.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        resetCode.setLastSentAt(LocalDateTime.now());
         pCodeRepo.save(resetCode);
 
-        // emailService.sendResetPasswordCode(email, "Reset your password: http://localhost:5173/reset-password?token=" + token); //For dev this should be disabled
+        // emailService.sendResetPasswordCode(email, "http://localhost:5173/reset-password?token=" + token); // for dev disable
 
         return ResponseEntity.ok("Reset link sent.");
     }

@@ -12,6 +12,7 @@ public class PasswordResetCode {
     private String email;
     private String code;
     private LocalDateTime expiresAt;
+    private LocalDateTime lastSentAt;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -24,4 +25,7 @@ public class PasswordResetCode {
 
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public LocalDateTime getLastSentAt() { return lastSentAt; }
+    public void setLastSentAt(LocalDateTime lastSentAt) { this.lastSentAt = lastSentAt; }
 }

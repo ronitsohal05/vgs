@@ -10,12 +10,27 @@ function VerificationPage() {
   const location = useLocation();
   const email = location.state?.email;
 
+  // On mount, check for cooldown in localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(`vcodeCooldown-${email}`);
+    if (saved) {
+      const diff = Math.floor((new Date(saved) - new Date()) / 1000);
+      if (diff > 0) {
+        setCooldown(diff);
+      } else {
+        localStorage.removeItem(`vcodeCooldown-${email}`);
+      }
+    }
+  }, [email]);
+
   useEffect(() => {
     if (cooldown > 0) {
       const interval = setInterval(() => setCooldown((prev) => prev - 1), 1000);
       return () => clearInterval(interval);
+    } else {
+      localStorage.removeItem(`vcodeCooldown-${email}`);
     }
-  }, [cooldown]);
+  }, [cooldown, email]);
 
   const verify = async () => {
     try {
@@ -31,7 +46,9 @@ function VerificationPage() {
     try {
       await axios.post("http://localhost:8080/auth/vcode", new URLSearchParams({ email }));
       setMessage("Code sent to your email.");
-      setCooldown(30);
+      const expiry = new Date(Date.now() + 60000); // 60 seconds from now
+      localStorage.setItem(`vcodeCooldown-${email}`, expiry.toISOString());
+      setCooldown(60);
     } catch (err) {
       setMessage(err.response?.data || "Failed to send code.");
     }
@@ -68,8 +85,6 @@ function VerificationPage() {
         >
           Verify
         </button>
-
-       
 
         {message && <p className="mt-3 text-sm text-center text-gray-700">{message}</p>}
       </div>

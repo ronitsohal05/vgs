@@ -14,6 +14,7 @@ public class VerificationCode {
     private String email;
     private String code;
     private LocalDateTime expiresAt;
+    private LocalDateTime lastSentAt;
 
     public String getEmail() {
         return email;
@@ -37,5 +38,13 @@ public class VerificationCode {
 
     public void setExpiresAt(LocalDateTime expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    public LocalDateTime getLastSentAt() {
+        return lastSentAt;
+    }
+
+    public void setLastSentAt(LocalDateTime lastSentAt) {
+        this.lastSentAt = lastSentAt;
     }
 }
