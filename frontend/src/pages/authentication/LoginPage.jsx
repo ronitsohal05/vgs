@@ -11,7 +11,7 @@ function LoginPage() {
     try {
       const res = await axios.post("http://localhost:8080/auth/login", new URLSearchParams({ email, password }));
       localStorage.setItem("token", res.data.token);
-      navigate("/dashboard");
+      navigate("/browse");
     } catch (err) {
       const data = err.response?.data;
 
