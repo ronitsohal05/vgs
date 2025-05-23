@@ -24,7 +24,7 @@ function ResetPasswordPage() {
         newPassword: password
       }));
       alert("Password successfully reset");
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       alert(err.response?.data || "Reset failed");
     }

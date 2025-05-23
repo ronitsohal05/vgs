@@ -65,6 +65,7 @@ public class AuthController {
         }
 
         User user = new User();
+        user.setPofilePictureLink("/src/assets/default_profile.png");
         user.setFirstName(first);
         user.setLastName(last);
         user.setEmail(email);

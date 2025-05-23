@@ -27,10 +27,7 @@ function UserDashboard() {
     });
   }, [navigate]);
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+
 
   return (
     <>
@@ -38,7 +35,7 @@ function UserDashboard() {
         <div className="max-w-4xl mx-auto p-6">
             <div className="flex items-center space-x-4">
                 <img
-                src="/src/assets/default_profile.png"
+                src={user.profilePictureLink}
                 alt="Profile"
                 className="w-24 h-24 rounded-full border"
                 />

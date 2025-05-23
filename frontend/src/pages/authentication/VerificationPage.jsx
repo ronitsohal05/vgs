@@ -36,7 +36,7 @@ function VerificationPage() {
     try {
       const res = await axios.post("http://localhost:8080/auth/verify", new URLSearchParams({ email, code }));
       alert(res.data);
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       alert(err.response?.data || "Verification failed");
     }

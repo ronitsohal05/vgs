@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/authentication/LoginPage";
 import SignupPage from "./pages/authentication/SignUpPage";
 import VerificationPage from "./pages/authentication/VerificationPage";
@@ -15,6 +16,11 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        } />
+        <Route path="/login" element={
           <PublicRoute>
             <LoginPage />
           </PublicRoute>

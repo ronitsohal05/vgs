@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User {
     @Id
     private String id;
-
+    private String profilePictureLink;
     private String firstName;
     private String lastName;
     private String email;
@@ -21,6 +21,14 @@ public class User {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getProfilePictureLink() {
+        return profilePictureLink;
+    }
+
+    public void setPofilePictureLink(String profilePictureLink) {
+        this.profilePictureLink = profilePictureLink;
     }
 
     public String getFirstName() {
