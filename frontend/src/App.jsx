@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/authentication/LoginPage";
 import SignupPage from "./pages/authentication/SignUpPage";
 import VerificationPage from "./pages/authentication/VerificationPage";
-import Dashboard from "./pages/Dashboard";
+import UserDashboard from "./pages/UserDashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
 import ForgotPasswordPage from "./pages/authentication/ForgotPasswordPage";
@@ -40,7 +40,7 @@ function App() {
         } />
         <Route path="/dashboard" element={
           <PrivateRoute>
-            <Dashboard />
+            <UserDashboard />
           </PrivateRoute>
         } />
         <Route path="/browse" element={
