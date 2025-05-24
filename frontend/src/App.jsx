@@ -10,6 +10,7 @@ import PublicRoute from "./components/PublicRoute";
 import ForgotPasswordPage from "./pages/authentication/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/authentication/ResetPasswordPage";
 import Browse from "./pages/Browse";
+import UploadListingPage from "./pages/UploadListingPage"
 
 function App() {
   return (
@@ -52,6 +53,11 @@ function App() {
         <Route path="/browse" element={
           <PrivateRoute>
             <Browse />
+          </PrivateRoute>
+        } />
+        <Route path="/upload" element={
+          <PrivateRoute>
+            <UploadListingPage />
           </PrivateRoute>
         } />
       </Routes>

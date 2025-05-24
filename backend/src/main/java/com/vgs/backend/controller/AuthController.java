@@ -144,7 +144,7 @@ public class AuthController {
         if (!PasswordHasher.matches(password, user.getPasswordHash()))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password");
 
-        String token = jwtUtil.generateToken(email);
+        String token = jwtUtil.generateToken(email, user.getUniversity());
         return ResponseEntity.ok(Collections.singletonMap("token", token));
     }
 

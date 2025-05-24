@@ -1,0 +1,126 @@
+package com.vgs.backend.controller;
+
+import com.vgs.backend.model.Listing;
+import com.vgs.backend.repository.ListingRepository;
+import com.vgs.backend.service.S3Service;
+import com.vgs.backend.util.JwtUtil;
+import com.vgs.backend.util.SlugUtil;
+import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/listings")
+public class ListingController {
+
+    private final JwtUtil jwtUtil;
+    private final S3Service s3Service;
+    private final ListingRepository listingRepository;
+
+    @Value("${aws.s3.bucket}")
+    private String bucket;
+
+    public ListingController(JwtUtil jwtUtil,
+                             S3Service s3Service,
+                             ListingRepository listingRepository) {
+        this.jwtUtil = jwtUtil;
+        this.s3Service = s3Service;
+        this.listingRepository = listingRepository;
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Listing createListing(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam String title,
+            @RequestParam String description,
+            @RequestParam double price,
+            @RequestParam("images") List<MultipartFile> images
+    ) {
+        if (images.size() > 5) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot upload more than 5 images");
+        }
+
+        // extract and parse JWT
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.getAllClaims(token);
+        String email = claims.getSubject();
+        String university = claims.get("university", String.class);
+        String slug = SlugUtil.slugify(university);
+
+        // upload each image under "<slug>/..."
+        List<String> urls = new ArrayList<>();
+        for (MultipartFile image : images) {
+            String filename = UUID.randomUUID() + "-" + image.getOriginalFilename();
+            String key = slug + "/" + filename;
+            String url = s3Service.uploadFile(image, key);
+            urls.add(url);
+        }
+
+        // build and save listing
+        Listing listing = new Listing();
+        listing.setTitle(title);
+        listing.setDescription(description);
+        listing.setPrice(price);
+        listing.setOwnerId(email);
+        listing.setSchoolId(university);
+        listing.setImageUrls(urls);
+
+        return listingRepository.save(listing);
+    }
+
+    @GetMapping("/university")
+    public List<Listing> listByUniversity(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.getAllClaims(token);
+        String university = claims.get("university", String.class);
+
+        return listingRepository.findBySchoolId(university);
+    }
+
+    @GetMapping("/me")
+    public List<Listing> listMyListings(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.getAllClaims(token);
+        String email = claims.getSubject();
+        String university = claims.get("university", String.class);
+
+        return listingRepository.findByOwnerIdAndSchoolId(email, university);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteListing(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable String id
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.getAllClaims(token);
+        String email = claims.getSubject();
+        String university = claims.get("university", String.class);
+
+        // ensure only the owner from that university can delete
+        Listing listing = listingRepository
+                .findByIdAndOwnerIdAndSchoolId(id, email, university)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // delete images from S3
+        String prefix = "https://" + bucket + ".s3.amazonaws.com/";
+        for (String url : listing.getImageUrls()) {
+            String key = url.replace(prefix, "");
+            s3Service.deleteFile(key);
+        }
+
+        listingRepository.delete(listing);
+    }
+}
