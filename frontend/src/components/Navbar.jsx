@@ -47,14 +47,19 @@ export default function NavBar() {
                     </Link>
                 )}
 
+                {loggedIn && (
+                    <Link
+                        to="/upload"
+                        className="text-gray-700 hover:underline text-sm"
+                    >
+                        Sell
+                    </Link>
+                )}
+
+
+
                 {loggedIn ? (
                     <>
-                        <button
-                            onClick={logout}
-                            className="bg-gray-900 text-white px-6 py-2 rounded-full hover:bg-gray-800 transition-colors"
-                        >
-                            Log Out
-                        </button>
                         {user?.profilePictureLink && (
                             <Link to="/dashboard">
                                 <img
@@ -64,6 +69,12 @@ export default function NavBar() {
                                 />
                             </Link>
                         )}
+                        <button
+                            onClick={logout}
+                            className="bg-gray-900 text-white px-6 py-2 rounded-full hover:bg-gray-800 transition-colors"
+                        >
+                            Log Out
+                        </button>
                     </>
                 ) : (
                     <Link

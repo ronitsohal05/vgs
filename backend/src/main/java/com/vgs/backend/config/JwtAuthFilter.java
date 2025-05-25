@@ -25,24 +25,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
-            throws ServletException, IOException {
+                                    throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        String token = null;
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            String email = jwtUtil.validateTokenAndGetEmail(token);
-
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        email, null, Collections.emptyList());
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            String token = authHeader.substring(7);
+            try {
+                String email = jwtUtil.validateTokenAndGetEmail(token);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception ex) {
+                // invalid / expired token → do nothing, leave context unauthenticated
             }
         }
 
         filterChain.doFilter(request, response);
     }
+
 }

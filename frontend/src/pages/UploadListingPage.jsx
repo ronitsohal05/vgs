@@ -41,7 +41,7 @@ export default function UploadListingPage() {
     images.forEach(image => formData.append('images', image));
 
     try {
-      await axios.post('http://localhost:8080/api/listings', formData, {
+      await axios.post('http://localhost:8080/listings', formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

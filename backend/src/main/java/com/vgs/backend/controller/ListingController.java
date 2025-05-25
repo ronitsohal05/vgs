@@ -99,6 +99,22 @@ public class ListingController {
         return listingRepository.findByOwnerIdAndSchoolId(email, university);
     }
 
+    @GetMapping("/{id}")
+    public Listing getListingById(
+        @RequestHeader("Authorization") String authHeader,
+        @PathVariable String id
+    ) {
+        // parse token
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.getAllClaims(token);
+        String university = claims.get("university", String.class);
+
+        // fetch and validate school
+        return listingRepository.findById(id)
+            .filter(l -> university.equals(l.getSchoolId()))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+    }
+
     @DeleteMapping("/{id}")
     public void deleteListing(
             @RequestHeader("Authorization") String authHeader,

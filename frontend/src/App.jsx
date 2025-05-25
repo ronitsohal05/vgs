@@ -11,6 +11,7 @@ import ForgotPasswordPage from "./pages/authentication/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/authentication/ResetPasswordPage";
 import Browse from "./pages/Browse";
 import UploadListingPage from "./pages/UploadListingPage"
+import ListingDetailsPage from "./pages/ListingDetailsPage";
 
 function App() {
   return (
@@ -58,6 +59,11 @@ function App() {
         <Route path="/upload" element={
           <PrivateRoute>
             <UploadListingPage />
+          </PrivateRoute>
+        } />
+        <Route path="/listings/:id" element={
+          <PrivateRoute>
+            <ListingDetailsPage />
           </PrivateRoute>
         } />
       </Routes>
