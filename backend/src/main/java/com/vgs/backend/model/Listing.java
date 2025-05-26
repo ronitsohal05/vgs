@@ -15,6 +15,7 @@ public class Listing {
     private String ownerId;
     private String schoolId;
     private List<String> imageUrls;
+    private List<String> tags;
 
     public Listing() { }
 
@@ -88,5 +89,13 @@ public class Listing {
 
     public void setImageUrls(List<String> imageUrls) {
         this.imageUrls = imageUrls;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 }

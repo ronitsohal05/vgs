@@ -17,4 +17,6 @@ public interface ListingRepository extends MongoRepository<Listing, String> {
         String ownerId,
         String schoolId
     );
+
+    List<Listing> findByTagsIn(List<String> tags);
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,7 +43,8 @@ public class ListingController {
             @RequestParam String title,
             @RequestParam String description,
             @RequestParam double price,
-            @RequestParam("images") List<MultipartFile> images
+            @RequestParam("images") List<MultipartFile> images,
+            @RequestParam(value = "tags", required = false) List<String> tags
     ) {
         if (images.size() > 5) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot upload more than 5 images");
@@ -72,6 +74,7 @@ public class ListingController {
         listing.setOwnerId(email);
         listing.setSchoolId(university);
         listing.setImageUrls(urls);
+        listing.setTags(tags != null ? tags : Collections.emptyList());
 
         return listingRepository.save(listing);
     }
