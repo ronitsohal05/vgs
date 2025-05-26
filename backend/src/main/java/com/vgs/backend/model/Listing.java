@@ -1,5 +1,6 @@
 package com.vgs.backend.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,6 +17,7 @@ public class Listing {
     private String schoolId;
     private List<String> imageUrls;
     private List<String> tags;
+    private LocalDateTime datePosted;
 
     public Listing() { }
 
@@ -97,5 +99,13 @@ public class Listing {
 
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    public LocalDateTime getDatePosted() {
+        return datePosted;
+    }
+
+    public void setDatePosted(LocalDateTime datePosted) {
+        this.datePosted = datePosted;
     }
 }

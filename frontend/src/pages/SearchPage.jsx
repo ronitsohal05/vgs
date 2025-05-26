@@ -10,7 +10,7 @@ export default function SearchPage() {
   const [tags, setTags]         = useState([]);
   const [minPrice, setMin]      = useState(0);
   const [maxPrice, setMax]      = useState(1000);
-  const [sortBy, setSortBy]     = useState('');           // ← new
+  const [sortBy, setSortBy]     = useState('');
   const [results, setResults]   = useState([]);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState(null);
@@ -27,6 +27,8 @@ export default function SearchPage() {
     { value: 'priceDesc',  label: 'Price: High → Low' },
     { value: 'titleAsc',   label: 'Title: A → Z' },
     { value: 'titleDesc',  label: 'Title: Z → A' },
+    { value: 'dateAsc',    label: 'Date: Oldest → Newest' },
+    { value: 'dateDesc',   label: 'Date: Newest → Oldest' },
   ];
 
   const toggleTag = tag =>
@@ -68,6 +70,16 @@ export default function SearchPage() {
         case 'titleDesc':
           data.sort((a, b) => b.title.localeCompare(a.title));
           break;
+        case 'dateAsc':
+          data.sort((a, b) =>
+            new Date(a.datePosted) - new Date(b.datePosted)
+          );
+          break;
+        case 'dateDesc':
+          data.sort((a, b) =>
+            new Date(b.datePosted) - new Date(a.datePosted)
+          );
+          break;
         default:
           break;
       }
@@ -83,7 +95,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     fetchResults();
-  }, []); // initial
+  }, []); // initial on mount
 
   const handleSubmit = e => {
     e.preventDefault();

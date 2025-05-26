@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -76,6 +77,7 @@ public class ListingController {
         listing.setSchoolId(university);
         listing.setImageUrls(urls);
         listing.setTags(tags != null ? tags : Collections.emptyList());
+        listing.setDatePosted(LocalDateTime.now());
 
         return listingRepository.save(listing);
     }
