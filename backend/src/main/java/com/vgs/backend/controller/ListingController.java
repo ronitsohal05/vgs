@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/listings")
@@ -77,6 +78,33 @@ public class ListingController {
         listing.setTags(tags != null ? tags : Collections.emptyList());
 
         return listingRepository.save(listing);
+    }
+
+    @GetMapping("/search")
+    public List<Listing> searchListings(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(required = false) String title,
+        @RequestParam(required = false) List<String> tags,
+        @RequestParam(required = false) Double minPrice,
+        @RequestParam(required = false) Double maxPrice
+    ) {
+        // 1) extract the user’s university from JWT
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.getAllClaims(token);
+        String university = claims.get("university", String.class);
+
+        // 2) load everything in that university
+        List<Listing> base = listingRepository.findBySchoolId(university);
+
+        // 3) in‐memory filter chain (for simplicity; for large datasets swap to MongoTemplate)
+        return base.stream()
+        .filter(l -> title == null
+            || l.getTitle().toLowerCase().contains(title.toLowerCase()))
+        .filter(l -> tags == null || tags.isEmpty()
+            || l.getTags().stream().anyMatch(tags::contains))
+        .filter(l -> minPrice == null || l.getPrice() >= minPrice)
+        .filter(l -> maxPrice == null || l.getPrice() <= maxPrice)
+        .collect(Collectors.toList());
     }
 
     @GetMapping("/university")

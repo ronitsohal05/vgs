@@ -9,7 +9,8 @@ import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
 import ForgotPasswordPage from "./pages/authentication/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/authentication/ResetPasswordPage";
-import Browse from "./pages/Browse";
+//import Browse from "./pages/Browse";
+import SearchPage from "./pages/SearchPage";
 import UploadListingPage from "./pages/UploadListingPage"
 import ListingDetailsPage from "./pages/ListingDetailsPage";
 
@@ -53,7 +54,7 @@ function App() {
         } />
         <Route path="/browse" element={
           <PrivateRoute>
-            <Browse />
+            <SearchPage />
           </PrivateRoute>
         } />
         <Route path="/upload" element={
