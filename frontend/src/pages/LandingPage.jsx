@@ -28,7 +28,7 @@ function LandingPage() {
             to="/login"
             className="bg-gray-900 text-white px-8 py-3 rounded-full flex items-center text-lg hover:bg-gray-800 transition-colors"
           >
-            Log In
+            Sign In
           </Link>
         </div>
 

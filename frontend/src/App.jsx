@@ -13,6 +13,7 @@ import ResetPasswordPage from "./pages/authentication/ResetPasswordPage";
 import SearchPage from "./pages/SearchPage";
 import UploadListingPage from "./pages/UploadListingPage"
 import ListingDetailsPage from "./pages/ListingDetailsPage";
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
@@ -65,6 +66,11 @@ function App() {
         <Route path="/listings/:id" element={
           <PrivateRoute>
             <ListingDetailsPage />
+          </PrivateRoute>
+        } />
+        <Route path="/chat" element={
+          <PrivateRoute>
+            <ChatPage />
           </PrivateRoute>
         } />
       </Routes>

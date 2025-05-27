@@ -1,16 +1,19 @@
+// src/pages/ListingDetailsPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import NavBar from '../components/Navbar';
 
 function ListingDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [listing, setListing] = useState(null);
-  const [owner, setOwner] = useState(null);
+  const [owner,   setOwner]   = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [index, setIndex] = useState(0);
+  const [error,   setError]   = useState(null);
+  const [index,   setIndex]   = useState(0);
 
   useEffect(() => {
     async function fetchListing() {
@@ -34,8 +37,10 @@ function ListingDetailsPage() {
     async function fetchOwner() {
       if (!listing?.ownerId) return;
       try {
+        // assumes your user endpoint is GET /user/{emailOrId}
         const res = await axios.get(
-          `http://localhost:8080/users/${listing.ownerId}`
+          `http://localhost:8080/users/${encodeURIComponent(listing.ownerId)}`, 
+          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}`} }
         );
         setOwner(res.data);
       } catch (err) {
@@ -45,13 +50,24 @@ function ListingDetailsPage() {
     fetchOwner();
   }, [listing]);
 
+  const startChat = () => {
+    navigate('/chat', {
+      state: {
+        otherUserId:  owner.email,
+        otherUserName: `${owner.firstName} ${owner.lastName}`
+      }
+  });
+};
+
+
   if (loading) return <p>Loading...</p>;
-  if (error || !listing) return <p className="text-red-600">{error || 'Not found'}</p>;
+  if (error  || !listing) 
+    return <p className="text-red-600">{error || 'Not found'}</p>;
 
   const images = Array.isArray(listing.imageUrls) ? listing.imageUrls : [];
-  const prev = () => setIndex((index + images.length - 1) % images.length);
-  const next = () => setIndex((index + 1) % images.length);
-  const price = typeof listing.price === 'number'
+  const prev   = () => setIndex((index + images.length - 1) % images.length);
+  const next   = () => setIndex((index + 1) % images.length);
+  const price  = typeof listing.price === 'number'
     ? listing.price.toFixed(2)
     : parseFloat(listing.price).toFixed(2);
 
@@ -60,6 +76,7 @@ function ListingDetailsPage() {
       <NavBar />
       <div className="flex-grow flex items-center justify-center px-4 py-8">
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Image carousel */}
           <div className="relative">
             {images.length > 0 ? (
               <>
@@ -84,6 +101,7 @@ function ListingDetailsPage() {
             )}
           </div>
 
+          {/* Details + Owner */}
           <div>
             <h1 className="text-2xl font-bold mb-4">{listing.title}</h1>
             <p className="text-xl text-blue-600 mb-4">${price}</p>
@@ -105,6 +123,12 @@ function ListingDetailsPage() {
                   </span>
                   <span className="text-sm text-gray-600">{owner.email}</span>
                   <span className="text-sm text-gray-600">{owner.university}</span>
+                  <button
+                    onClick={startChat}
+                    className="mt-3 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Message
+                  </button>
                 </div>
               ) : (
                 <p>Loading owner info...</p>

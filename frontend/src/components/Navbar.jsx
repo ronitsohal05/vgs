@@ -56,6 +56,15 @@ export default function NavBar() {
                     </Link>
                 )}
 
+                {loggedIn && (
+                    <Link
+                        to="/chat"
+                        className="text-gray-700 hover:underline text-sm"
+                    >
+                        Chat
+                    </Link>
+                )}
+
 
 
                 {loggedIn ? (
