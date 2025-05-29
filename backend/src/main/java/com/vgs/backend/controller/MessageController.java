@@ -3,6 +3,9 @@ package com.vgs.backend.controller;
 import com.vgs.backend.model.Message;
 import com.vgs.backend.service.MessageService;
 import com.vgs.backend.util.JwtUtil;
+
+import io.jsonwebtoken.Claims;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,8 +58,10 @@ public class MessageController {
 
     @GetMapping("/threads")
     public List<ThreadDto> listThreads(@RequestHeader("Authorization") String authHeader) {
-        String me = extractEmail(authHeader);
-        return messageSvc.getThreads(me).stream()
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.getAllClaims(token);
+        String email = claims.getSubject();
+        return messageSvc.getThreads(email).stream()
                          .map(ThreadDto::from)
                          .collect(Collectors.toList());
     }

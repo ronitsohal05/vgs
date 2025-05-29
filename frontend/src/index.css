@@ -2,20 +2,16 @@
 
 
 
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
+@keyframes float {
+  0%,
   100% {
-    transform: translateX(-33.333%);
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
-.animate-scroll {
-  animation: scroll 25s linear infinite;
-  width: fit-content;
-}
-
-.animate-scroll:hover {
-  animation-play-state: paused;
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
