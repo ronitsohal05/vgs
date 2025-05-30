@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom"
 function ListingCard({ listing, viewMode = "grid", showSeller = false, showDelete = false, onDelete = () => {} }) {
   const navigate = useNavigate()
   const [imageError, setImageError] = useState(false)
-  const [isFavorited, setIsFavorited] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showActions, setShowActions] = useState(false)
 
@@ -37,12 +36,6 @@ function ListingCard({ listing, viewMode = "grid", showSeller = false, showDelet
     // Prevent navigation if clicking on action buttons
     if (e.target.closest(".action-button") || e.target.closest(".delete-section")) return
     navigate(`/listings/${listing.id}`)
-  }
-
-  const handleFavorite = (e) => {
-    e.stopPropagation()
-    setIsFavorited(!isFavorited)
-    // TODO: Implement API call to save/remove favorite
   }
 
   const handleShare = (e) => {
@@ -103,28 +96,6 @@ function ListingCard({ listing, viewMode = "grid", showSeller = false, showDelet
                 +{listing.imageUrls.length - 1}
               </div>
             )}
-            <div className="absolute top-2 left-2 flex space-x-1">
-              <button
-                onClick={handleFavorite}
-                className={`action-button p-1.5 rounded-full transition-all ${
-                  isFavorited ? "bg-red-500 text-white" : "bg-white/90 text-gray-600 hover:bg-white"
-                }`}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill={isFavorited ? "currentColor" : "none"}
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
 
           {/* Content */}
@@ -294,28 +265,6 @@ function ListingCard({ listing, viewMode = "grid", showSeller = false, showDelet
 
         {/* Action Buttons */}
         <div className="absolute top-3 left-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <button
-            onClick={handleFavorite}
-            className={`action-button p-2 rounded-full transition-all backdrop-blur-sm ${
-              isFavorited
-                ? "bg-red-500 text-white shadow-lg"
-                : "bg-white/90 text-gray-600 hover:bg-white hover:text-red-500"
-            }`}
-          >
-            <svg
-              className="w-4 h-4"
-              fill={isFavorited ? "currentColor" : "none"}
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
           <button
             onClick={handleShare}
             className="action-button p-2 rounded-full bg-white/90 text-gray-600 hover:bg-white hover:text-blue-500 transition-all backdrop-blur-sm"
