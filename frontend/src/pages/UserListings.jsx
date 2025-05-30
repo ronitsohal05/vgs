@@ -7,6 +7,21 @@ export default function UserListings() {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
 
+  // delete handler passed into each card
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`http://localhost:8080/listings/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // remove from local state
+      setListings(ls => ls.filter(l => l.id !== id));
+    } catch (err) {
+      console.error('Failed to delete listing', err);
+      alert('Could not delete listing');
+    }
+  };
+
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -37,7 +52,12 @@ export default function UserListings() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {listings.map(item => (
-        <ListingCard key={item.id} listing={item} />
+        <ListingCard
+          key={item.id}
+          listing={item}
+          showDelete = {true}
+          onDelete={handleDelete}
+        />
       ))}
     </div>
   );
